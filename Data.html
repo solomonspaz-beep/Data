@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataHub - Mobile Data Plans</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #1a1a2e;
+            color: #ffffff;
+            min-height: 100vh;
+            padding-bottom: 100px;
+        }
+
+        /* Header */
+        .header {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #1a1a2e;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .back-btn {
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* Network Selector */
+        .network-section {
+            padding: 0 15px;
+            margin-bottom: 20px;
+        }
+
+        .network-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .network-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 30px;
+            border: 2px solid transparent;
+            background: #252542;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .network-btn.active {
+            border-color: #00d4aa;
+            background: rgba(0, 212, 170, 0.15);
+        }
+
+        .network-btn i {
+            font-size: 16px;
+        }
+
+        .network-btn.mtn.active { border-color: #ffcc00; background: rgba(255, 204, 0, 0.15); }
+        .network-btn.airtel.active { border-color: #ff0000; background: rgba(255, 0, 0, 0.15); }
+        .network-btn.glo.active { border-color: #00aa00; background: rgba(0, 170, 0, 0.15); }
+
+        /* Phone Input */
+        .phone-input-wrapper {
+            background: #252542;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 2px solid transparent;
+            transition: border-color 0.3s;
+        }
+
+        .phone-input-wrapper.error {
+            border-color: #ff4444;
+            animation: shake 0.5s;
+        }
+
+        .phone-input-wrapper.success {
+            border-color: #00d4aa;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .phone-input-wrapper i {
+            color: #00d4aa;
+            font-size: 18px;
+        }
+
+        .phone-input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+            outline: none;
+            width: 100%;
+            letter-spacing: 1px;
+        }
+
+        .phone-input::placeholder {
+            color: #666;
+        }
+
+        .error-msg {
+            color: #ff4444;
+            font-size: 12px;
+            margin-top: 8px;
+            padding-left: 5px;
+            display: none;
+        }
+
+        .error-msg.show {
+            display: block;
+        }
+
+        /* Duration Label */
+        .duration-label {
+            padding: 0 15px;
+            margin: 20px 0 15px;
+            color: #888;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .duration-label i {
+            color: #00d4aa;
+        }
+
+        /* Data Plans Grid */
+        .plans-container {
+            padding: 0 15px;
+        }
+
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .plan-card {
+            background: #252542;
+            border-radius: 16px;
+            padding: 25px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plan-card:hover {
+            transform: translateY(-3px);
+            border-color: #00d4aa;
+            box-shadow: 0 10px 30px rgba(0, 212, 170, 0.2);
+        }
+
+        .plan-card.selected {
+            border-color: #00d4aa;
+            background: rgba(0, 212, 170, 0.1);
+        }
+
+        .plan-card.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .plan-size {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #fff, #00d4aa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .plan-duration {
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .plan-price {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .plan-price::before {
+            content: '₦';
+            font-size: 16px;
+        }
+
+        /* Bottom Action */
+        .bottom-action {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1a1a2e;
+            padding: 15px 20px;
+            border-top: 1px solid #333;
+            display: none;
+            z-index: 100;
+        }
+
+        .bottom-action.show {
+            display: block;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .proceed-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #00d4aa, #00a884);
+            color: #fff;
+            border: none;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            transition: opacity 0.3s;
+        }
+
+        .proceed-btn:hover {
+            opacity: 0.9;
+        }
+
+        .proceed-btn:disabled {
+            background: #333;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        /* Responsive */
+        @media (min-width: 768px) {
+            body {
+                max-width: 480px;
+                margin: 0 auto;
+                border-left: 1px solid #333;
+                border-right: 1px solid #333;
+            }
+            
+            .bottom-action {
+                max-width: 480px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <i class="fas fa-chevron-left back-btn"></i>
+        <span class="header-title">Mobile Data</span>
+        <div></div>
+    </div>
+
+    <!-- Network Selector -->
+    <div class="network-section">
+        <div class="network-selector">
+            <button class="network-btn mtn active" data-network="mtn" onclick="selectNetwork('mtn')">
+                <i class="fas fa-signal"></i>
+                MTN
+            </button>
+            <button class="network-btn airtel" data-network="airtel" onclick="selectNetwork('airtel')">
+                <i class="fas fa-broadcast-tower"></i>
+                Airtel
+            </button>
+            <button class="network-btn glo" data-network="glo" onclick="selectNetwork('glo')">
+                <i class="fas fa-globe"></i>
+                Glo
+            </button>
+        </div>
+
+        <div class="phone-input-wrapper" id="phoneWrapper">
+            <i class="fas fa-mobile-alt"></i>
+            <input type="tel" class="phone-input" id="phoneInput" 
+                   placeholder="080 0000 0000" maxlength="11" 
+                   oninput="validatePhone(this.value)">
+        </div>
+        <div class="error-msg" id="errorMsg">Please enter a valid 11-digit phone number</div>
+    </div>
+
+    <!-- Duration Label -->
+    <div class="duration-label">
+        <i class="far fa-clock"></i>
+        All Plans Valid for 14 Days
+    </div>
+
+    <!-- Data Plans -->
+    <div class="plans-container">
+        <div class="plans-grid" id="plansGrid">
+            <!-- Plans will be inserted here by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Bottom Action -->
+    <div class="bottom-action" id="bottomAction">
+        <button class="proceed-btn" id="proceedBtn" onclick="proceedToPay()">
+            <span>Proceed to Pay</span>
+            <span id="selectedPrice">₦0</span>
+            <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+
+    <script>
+        // Exactly 4 plans with Paystack links
+        const plans = [
+            { size: '30GB', price: 2200, link: 'https://paystack.shop/pay/nsmozceo35' },
+            { size: '45GB', price: 2700, link: 'https://paystack.shop/pay/-67ekjwnzb' },
+            { size: '70GB', price: 3800, link: 'https://paystack.shop/pay/niu-yv69o8' },
+            { size: '90GB', price: 5400, link: 'https://paystack.shop/pay/zu83-jknmn' }
+        ];
+
+        let currentNetwork = 'mtn';
+        let selectedPlan = null;
+        let phoneNumber = '';
+
+        // Save state to localStorage
+        function saveState() {
+            localStorage.setItem('dataPlanState', JSON.stringify({
+                network: currentNetwork,
+                selectedPlan: selectedPlan,
+                phoneNumber: phoneNumber
+            }));
+        }
+
+        // Restore state from localStorage
+        function restoreState() {
+            const saved = localStorage.getItem('dataPlanState');
+            if (saved) {
+                const state = JSON.parse(saved);
+                currentNetwork = state.network || 'mtn';
+                selectedPlan = state.selectedPlan !== undefined ? state.selectedPlan : null;
+                phoneNumber = state.phoneNumber || '';
+                return true;
+            }
+            return false;
+        }
+
+        function renderPlans() {
+            const grid = document.getElementById('plansGrid');
+            const isValidPhone = phoneNumber.length === 11 && /^\d{11}$/.test(phoneNumber);
+            
+            grid.innerHTML = plans.map((plan, index) => `
+                <div class="plan-card ${selectedPlan === index ? 'selected' : ''} ${!isValidPhone ? 'disabled' : ''}" 
+                     onclick="selectPlan(${index}, ${plan.price})"
+                     style="animation: fadeIn 0.3s ease ${index * 0.1}s both;">
+                    <div class="plan-size">${plan.size}</div>
+                    <div class="plan-duration">14 Days Validity</div>
+                    <div class="plan-price">${plan.price.toLocaleString()}</div>
+                </div>
+            `).join('');
+
+            // Update bottom bar visibility
+            if (selectedPlan !== null && isValidPhone) {
+                document.getElementById('selectedPrice').textContent = '₦' + plans[selectedPlan].price.toLocaleString();
+                document.getElementById('bottomAction').classList.add('show');
+            } else {
+                document.getElementById('bottomAction').classList.remove('show');
+            }
+        }
+
+        function validatePhone(value) {
+            // Remove non-digits
+            phoneNumber = value.replace(/\D/g, '');
+            
+            const wrapper = document.getElementById('phoneWrapper');
+            const errorMsg = document.getElementById('errorMsg');
+            const input = document.getElementById('phoneInput');
+            
+            // Update input with cleaned value
+            input.value = phoneNumber;
+            
+            if (phoneNumber.length === 11) {
+                wrapper.classList.remove('error');
+                wrapper.classList.add('success');
+                errorMsg.classList.remove('show');
+                saveState();
+                renderPlans();
+            } else if (phoneNumber.length > 0) {
+                wrapper.classList.remove('success');
+                wrapper.classList.add('error');
+                errorMsg.classList.add('show');
+                selectedPlan = null;
+                saveState();
+                renderPlans();
+            } else {
+                wrapper.classList.remove('error', 'success');
+                errorMsg.classList.remove('show');
+                selectedPlan = null;
+                saveState();
+                renderPlans();
+            }
+        }
+
+        function selectPlan(index, price) {
+            const isValidPhone = phoneNumber.length === 11 && /^\d{11}$/.test(phoneNumber);
+            
+            if (!isValidPhone) {
+                document.getElementById('phoneWrapper').classList.add('error');
+                document.getElementById('errorMsg').classList.add('show');
+                document.getElementById('phoneInput').focus();
+                return;
+            }
+            
+            selectedPlan = index;
+            saveState();
+            renderPlans();
+            
+            setTimeout(() => {
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            }, 100);
+        }
+
+        function proceedToPay() {
+            if (selectedPlan === null) return;
+            
+            const plan = plans[selectedPlan];
+            
+            // Open Paystack in new tab
+            window.open(plan.link, '_blank');
+        }
+
+        function selectNetwork(network) {
+            currentNetwork = network;
+            saveState();
+            
+            document.querySelectorAll('.network-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.network === network) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            renderPlans();
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const wasRestored = restoreState();
+            
+            if (wasRestored && phoneNumber) {
+                document.getElementById('phoneInput').value = phoneNumber;
+                validatePhone(phoneNumber); // This will trigger renderPlans
+            } else {
+                renderPlans();
+            }
+            
+            // Set correct active network button
+            document.querySelectorAll('.network-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.network === currentNetwork) {
+                    btn.classList.add('active');
+                }
+            });
+        });
+
+        // Also save state when page is about to unload (backup)
+        window.addEventListener('beforeunload', saveState);
+    </script>
+</body>
+</html>
